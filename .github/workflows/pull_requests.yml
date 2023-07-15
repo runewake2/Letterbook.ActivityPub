@@ -10,6 +10,7 @@ on:
       - ready_for_review
     branches:
       - 'main'
+      - 'test-artifacts'
 
 jobs:
   build:
@@ -39,7 +40,19 @@ jobs:
         run: dotnet build Letterbook.ActivityPub.sln
 #        TODO: test results and coverage
       - name: Test
-        run: dotnet test Letterbook.ActivityPub.sln
+        run: dotnet test Letterbook.ActivityPub.sln -p:CollectCoverage=true --results-directory "coverage"
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '60 80'
       - name: Package for Nuget
         run: 'dotnet pack Letterbook.ActivityPub -p:PackageVersion=$PACKAGE_VERSION -o ./'
         env: 
@@ -51,3 +64,10 @@ jobs:
           path: ./*.nupkg
           if-no-files-found: error
           retention-days: 7
+      - name: Save test result artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: coverage
+        # Even if the tests fail - publish the results
+        if: always()
