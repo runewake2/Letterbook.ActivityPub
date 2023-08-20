@@ -2,6 +2,12 @@
 
 namespace Letterbook.ActivityPub;
 
+/// <summary>
+/// <c>CompactIri</c> are Internationalized Resource Identifier's. IRI's are an extension of <c>Uri</c>'s with support for Unicode characters instead of just ASCII characters.
+/// </summary>
+/// <seealso href="https://www.w3.org/International/articles/idn-and-iri/"/>
+/// <seealso href="https://www.w3.org/International/O-URL-and-ident.html"/>
+
 [JsonConverter(typeof(ConvertCompactIri))]
 public class CompactIri : Uri
 {
@@ -43,7 +49,9 @@ public class CompactIri : Uri
     }
     
     public static implicit operator CompactIri(string s) => new (s);
-    
+
+    public static CompactIri FromUri(Uri u) => new (u.ToString());
+
     public static bool TryCreateCompact(string compactUrl, out CompactIri? value)
     {
         if (IsCompactUri(compactUrl, out var prefix, out var suffix)

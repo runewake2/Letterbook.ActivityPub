@@ -10,13 +10,9 @@ on:
       - ready_for_review
     branches:
       - 'main'
-      - 'test-artifacts'
 
 jobs:
   build:
-    permissions:
-      pull-requests: write # Required for writing comments to the pull request
-      
     runs-on: ubuntu-latest
 
     steps:
@@ -79,6 +75,22 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-results
-          path: coverage
+          path: |
+            coverage
+            code-coverage-results.md
         # Even if the tests fail - publish the results
         if: always()
+      - name: Save the PR number in an artifact
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        env:
+          PR_NUM: ${{ github.event.number }}
+        run: echo $PR_NUM > pr.txt
+
+      - name: Upload the PR number
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: pr-number
+          path: ./pr.txt
+
